@@ -9,7 +9,8 @@ plugins {
 android {
     namespace = "com.example.whatsapp_recovery"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Use a valid locally installed NDK to avoid missing source.properties in 26.3.11579264
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

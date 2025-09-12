@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.whatsapp_recovery.data.MessageDao
 import com.example.whatsapp_recovery.data.MessageEntity
 
-@Database(entities = [MessageEntity::class], version = 1)
+@Database(entities = [MessageEntity::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun messageDao(): MessageDao
 
