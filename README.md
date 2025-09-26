@@ -115,7 +115,3 @@ This project is for educational purposes. Use responsibly and respect privacy la
 ## Contributing
 
 Issues and PRs are welcome. Please avoid including any personal message content or private data in bug reports.
-
-## License
-
-TBD. If you plan to distribute, add a LICENSE file and update this section.
