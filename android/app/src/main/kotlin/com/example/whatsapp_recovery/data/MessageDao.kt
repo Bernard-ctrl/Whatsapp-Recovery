@@ -19,4 +19,7 @@ interface MessageDao {
 
     @Query("UPDATE messages SET isDeleted = 1 WHERE id = :id")
     fun markDeleted(id: Long)
+
+    @Query("DELETE FROM messages")
+    fun deleteAll()
 }

@@ -39,11 +39,20 @@ class MainActivity : FlutterActivity() {
 										"content" to m.content,
 										"packageName" to m.packageName,
 										"timestamp" to m.timestamp,
-										"isDeleted" to m.isDeleted
+										"isDeleted" to m.isDeleted,
+										"conversationId" to m.conversationId
 									)
 								}
 						}
 						result.success(data)
+					}
+				}
+				"deleteAllMessages" -> {
+					CoroutineScope(Dispatchers.Main).launch {
+						withContext(Dispatchers.IO) {
+							AppDatabase.getInstance(this@MainActivity).messageDao().deleteAll()
+						}
+						result.success(true)
 					}
 				}
 				else -> result.notImplemented()

@@ -23,6 +23,12 @@ class WhatsAppNotificationListenerService : NotificationListenerService() {
             val extras = sbn.notification.extras
             val title = extras.getCharSequence("android.title")?.toString()
             val text = extras.getCharSequence("android.text")?.toString()
+            val conversationTitle = extras.getCharSequence("android.conversationTitle")?.toString()
+            val convoId = when {
+                !conversationTitle.isNullOrBlank() -> conversationTitle
+                !sbn.tag.isNullOrBlank() -> sbn.tag
+                else -> title
+            }
 
             if (TextUtils.isEmpty(title) && TextUtils.isEmpty(text)) return
 
@@ -33,7 +39,7 @@ class WhatsAppNotificationListenerService : NotificationListenerService() {
                 packageName = sbn.packageName,
                 timestamp = System.currentTimeMillis(),
                 isDeleted = false,
-                conversationId = sbn.tag
+                conversationId = convoId
             )
             scope.launch {
                 AppDatabase.getInstance(applicationContext).messageDao().insert(message)
