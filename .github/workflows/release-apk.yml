@@ -37,7 +37,7 @@ jobs:
         working-directory: android
         run: |
           if [ ! -x ./gradlew ]; then
-            gradle wrapper --gradle-version 8.12
+            gradle wrapper --gradle-version 8.13
           fi
 
       - name: Configure release signing
