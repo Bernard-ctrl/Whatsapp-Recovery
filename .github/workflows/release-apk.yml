@@ -37,13 +37,13 @@ jobs:
         working-directory: android
         run: |
           if [ ! -x ./gradlew ]; then
-            gradle_zip="$RUNNER_TEMP/gradle-8.13-bin.zip"
-            gradle_dir="$RUNNER_TEMP/gradle-8.13"
+            gradle_zip="$RUNNER_TEMP/gradle-8.14-bin.zip"
+            gradle_dir="$RUNNER_TEMP/gradle-8.14"
             curl --fail --silent --show-error --location \
-              https://services.gradle.org/distributions/gradle-8.13-bin.zip \
+              https://services.gradle.org/distributions/gradle-8.14-bin.zip \
               --output "$gradle_zip"
             unzip -q "$gradle_zip" -d "$RUNNER_TEMP"
-            "$gradle_dir/bin/gradle" wrapper --gradle-version 8.13
+            "$gradle_dir/bin/gradle" wrapper --gradle-version 8.14
           fi
 
       - name: Configure release signing
