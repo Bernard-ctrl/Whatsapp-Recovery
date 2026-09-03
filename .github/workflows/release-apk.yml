@@ -13,6 +13,10 @@ jobs:
   release:
     name: Build release APK
     runs-on: ubuntu-latest
+    env:
+      # Prevent Gradle's file watcher/daemon from colliding with Flutter's
+      # generated Android build during CI.
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.vfs.watch=false
 
     steps:
       - name: Check out source
@@ -63,7 +67,7 @@ jobs:
           EOF
 
       - name: Build release APK
-        run: flutter build apk --release
+        run: flutter build apk --release --verbose
 
       - name: Publish GitHub Release
         env:
