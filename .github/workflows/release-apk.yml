@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -74,8 +76,18 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="build-${GITHUB_RUN_NUMBER}"
+          previous_tag=$(git tag --sort=-creatordate | head -n 1 || true)
+          if [ -n "$previous_tag" ]; then
+            notes=$(git log --pretty=format:'- `%h` %s' "$previous_tag..$GITHUB_SHA")
+          else
+            notes=$(git log --pretty=format:'- `%h` %s' "$GITHUB_SHA")
+          fi
+          if [ -z "$notes" ]; then
+            notes="- No commit changes since the previous release."
+          fi
+          release_notes=$(printf '## Commits\n\n%s' "$notes")
           gh release create "$tag" \
             build/app/outputs/flutter-apk/app-release.apk \
             --target "$GITHUB_SHA" \
             --title "APK build ${GITHUB_RUN_NUMBER}" \
-            --generate-notes
+            --notes "$release_notes"
