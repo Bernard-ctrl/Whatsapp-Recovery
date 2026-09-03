@@ -1,23 +1,25 @@
 package com.example.whatsapp_recovery
 
 import android.content.Intent
-import android.os.Build
 import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 class MainActivity : FlutterActivity() {
-	private val CHANNEL = "com.example.whatsapp_recovery/notifications"
+	private val channel = "com.example.whatsapp_recovery/notifications"
+	private val activityScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
 	override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
 		super.configureFlutterEngine(flutterEngine)
 
-		MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+		MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channel).setMethodCallHandler { call, result ->
 			when (call.method) {
 				"openNotificationAccess" -> {
 					val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
@@ -29,7 +31,7 @@ class MainActivity : FlutterActivity() {
 					}
 				}
 				"getMessages" -> {
-					CoroutineScope(Dispatchers.Main).launch {
+					activityScope.launch {
 						val data = withContext(Dispatchers.IO) {
 							AppDatabase.getInstance(this@MainActivity).messageDao().getAll()
 								.map { m ->
@@ -48,7 +50,7 @@ class MainActivity : FlutterActivity() {
 					}
 				}
 				"deleteAllMessages" -> {
-					CoroutineScope(Dispatchers.Main).launch {
+					activityScope.launch {
 						withContext(Dispatchers.IO) {
 							AppDatabase.getInstance(this@MainActivity).messageDao().deleteAll()
 						}
@@ -58,6 +60,11 @@ class MainActivity : FlutterActivity() {
 				else -> result.notImplemented()
 			}
 		}
+	}
+
+	override fun onDestroy() {
+		activityScope.cancel()
+		super.onDestroy()
 	}
 }
 

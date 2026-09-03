@@ -8,6 +8,7 @@ import com.example.whatsapp_recovery.AppDatabase
 import com.example.whatsapp_recovery.data.MessageEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 class WhatsAppNotificationListenerService : NotificationListenerService() {
@@ -31,6 +32,19 @@ class WhatsAppNotificationListenerService : NotificationListenerService() {
             }
 
             if (TextUtils.isEmpty(title) && TextUtils.isEmpty(text)) return
+
+            // WhatsApp may post a replacement notification when a message is
+            // deleted. Do not save that replacement as a new recovered message.
+            if (text?.contains("This message was deleted", ignoreCase = true) == true) {
+                scope.launch {
+                    val conversationId = convoId ?: return@launch
+                    val dao = AppDatabase.getInstance(applicationContext).messageDao()
+                    dao.getLatestForConversation(conversationId)?.let { latest ->
+                        dao.update(latest.copy(isDeleted = true))
+                    }
+                }
+                return
+            }
 
             // WhatsApp sometimes uses InboxStyle / MessagingStyle; this is MVP simple parse
             val message = MessageEntity(
@@ -59,8 +73,7 @@ class WhatsAppNotificationListenerService : NotificationListenerService() {
                 // Mark the latest message in this conversation as deleted
                 scope.launch {
                     val dao = AppDatabase.getInstance(applicationContext).messageDao()
-                    val list = dao.getAll()
-                    val latestForConv = list.firstOrNull { it.conversationId == sbn.tag }
+                    val latestForConv = dao.getLatestForConversation(sbn.tag ?: return@launch)
                     latestForConv?.let {
                         dao.update(it.copy(isDeleted = true))
                     }
@@ -69,5 +82,10 @@ class WhatsAppNotificationListenerService : NotificationListenerService() {
         } catch (e: Exception) {
             Log.e(TAG, "onNotificationRemoved error", e)
         }
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
     }
 }

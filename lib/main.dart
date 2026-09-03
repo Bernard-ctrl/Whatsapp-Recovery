@@ -1,6 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -51,15 +50,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refresh() async {
+    if (!mounted) return;
     setState(() => _loading = true);
     try {
-      final List<dynamic> res = await _channel.invokeMethod('getMessages');
-      _messages = res
+      final result = await _channel.invokeMethod<List<dynamic>>('getMessages');
+      final res = result ?? const <dynamic>[];
+      final messages = res
           .cast<Map>()
           .map((e) => e.map((k, v) => MapEntry(k.toString(), v)))
           .toList();
+      if (mounted) {
+        final chatIds = _buildSections(messages).map((section) => section.id).toSet();
+        setState(() {
+          _messages = messages;
+          if (_selectedChatId != null && !chatIds.contains(_selectedChatId)) {
+            _selectedChatId = null;
+          }
+        });
+      }
     } catch (e) {
-      // ignore
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not load recovered messages')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -92,6 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (confirmed == true) {
       try {
         await _channel.invokeMethod('deleteAllMessages');
+        if (!mounted) return;
         setState(() {
           _messages = [];
           _selectedChatId = null;

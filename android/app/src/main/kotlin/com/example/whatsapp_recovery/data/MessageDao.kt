@@ -17,6 +17,9 @@ interface MessageDao {
     @Query("SELECT * FROM messages ORDER BY timestamp DESC")
     fun getAll(): List<MessageEntity>
 
+    @Query("SELECT * FROM messages WHERE conversationId = :conversationId ORDER BY timestamp DESC LIMIT 1")
+    fun getLatestForConversation(conversationId: String): MessageEntity?
+
     @Query("UPDATE messages SET isDeleted = 1 WHERE id = :id")
     fun markDeleted(id: Long)
 

@@ -21,7 +21,7 @@ void main() {
 
     // Verify action icons exist.
     expect(find.byIcon(Icons.lock_open), findsOneWidget); // open notification access
-    expect(find.byIcon(Icons.delete), findsOneWidget); // toggle deleted-only (initial state)
+    expect(find.byIcon(Icons.delete_forever), findsOneWidget);
     expect(find.byIcon(Icons.refresh), findsOneWidget); // refresh
   });
 }
